@@ -11,7 +11,6 @@ type Node struct {
 	Checksum []byte
 	Data []byte
 	X,Y int
-	// might have to rework these pointers...
 	Parent *Node
 	Left *Node
 	Right *Node
@@ -25,10 +24,6 @@ type Tree struct {
 // Gets the root node on the top of the tree. 
 func (tree *Tree) GetRoot() Node {
 	return tree.Nodes[len(tree.Nodes) - 1][0]
-}
-
-func (tree *Tree) test() {
-	fmt.Println("ree")
 }
 
 func (tree *Tree) PrintTree() {
@@ -49,7 +44,6 @@ func (node *Node) Compare(hash []byte) (bool) {
 	return bytes.Compare(node.Checksum, hash) == 0
 }
 
-// TODO: Add check for out of bound reads
 func (tree *Tree) GetNodeAtPos(x,y int) *Node {
 	if ((len(tree.Nodes) - 1) < y ||
 		(len(tree.Nodes[y]) - 1) < x) {
@@ -71,7 +65,6 @@ func (tree *Tree) Generate() {
 		tree.Nodes = append(tree.Nodes, []Node{})
 		l := len(tree.Nodes[level]) - 1
 		for i := 0; i < l; i++ {
-			//fmt.Println(i)
 			node_one := tree.Nodes[level][i]
 			node_two := tree.Nodes[level][i + 1]
 			tree.HashFunc.Write(append(node_one.Checksum,node_two.Checksum...))

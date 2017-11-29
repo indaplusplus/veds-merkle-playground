@@ -5,7 +5,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"crypto/sha256"
-	//"crypto/sha1"
 	"bytes"
 	"encoding/base64"
 	"crypto/x509"
@@ -33,26 +32,33 @@ type MerkleClient struct {
 
 func JSONRequest(URL string, JSON []byte) []byte {
 	roots := x509.NewCertPool()
-	cert_data,_ := ioutil.ReadFile(client.CertLocation)
+	cert_data, cert_err := ioutil.ReadFile(client.CertLocation)
+	if cert_err != nil {
+		log.Fatal(cert_err)
+	}
 	roots.AppendCertsFromPEM(cert_data)
 
 	tls_conf := &tls.Config{RootCAs: roots}
 	tr := &http.Transport{TLSClientConfig: tls_conf}
 	http_client := &http.Client{Transport: tr}
 	r, err := http_client.Post(URL, "application/json", bytes.NewBuffer(JSON))
-	defer r.Body.Close()
 
 	if err != nil {
 		log.Fatal(err)
 	}
-	data,_ := ioutil.ReadAll(r.Body)
+	data, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer r.Body.Close()
+
 	return data
 }
 
 func GetRemoteRootNode() *NodeJSON{
 	var root NodeJSON
 	req := JSONRequest("https://localhost:1337/getroot", []byte{})
-	_ = json.Unmarshal(req, &root)
+	json.Unmarshal(req, &root)
 	return &root
 }
 
@@ -97,8 +103,6 @@ func CompareTrees(node *NodeJSON) {
 	if bytes.Compare(hash,local_node.Checksum) == 0 {
 		fmt.Println(fmt.Sprintf("Hashes match! \n%x \n%x" ,hash, local_node.Checksum))
 	} else {
-		//fmt.Println("Hashes do not match")
-		// https://github.com/shomali11/util looks pretty cool
 		sub_nodes := GetRemoteSubNodes(node)
 		tmp := *sub_nodes
 		for _,l := range tmp {
@@ -106,7 +110,6 @@ func CompareTrees(node *NodeJSON) {
 				tmp := tree.GetNodeAtPos(l.X, l.Y)
 				tmp_hash,_ := base64.StdEncoding.DecodeString(l.Hash)
 				if tmp.Compare(tmp_hash) {
-				//if bytes.Compare(tmp_hash, tmp.Checksum) != 0 {
 					fmt.Println(fmt.Sprintf("Invalid block at: [%d, %d]", l.X, l.Y))
 				}
 			} else {

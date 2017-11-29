@@ -1,11 +1,8 @@
 package main
 
-//https://gist.github.com/denji/12b3a568f092ab951456
-
 import (
 	"net/http"
 	"crypto/sha256"
-	//"crypto/sha1"
 	"encoding/base64"
 	"encoding/json"
 	"io/ioutil"
@@ -18,7 +15,7 @@ import (
  * 2. Client checks if hashes match
  * 3. If they're the same we're done. Otherwise goto 4.
  * 4. If missmatch, client reqeuests the roots of the two subtrees.
- * 5. Server creates the necessary hashes and sends them back to the client. (?)
+ * 5. Server creates the necessary hashes and sends them back to the client.
  * 6. Repeat 4 and 5 until you've found the inconsistent data blocks(s).
  */
 
@@ -42,7 +39,7 @@ func GetNode(w http.ResponseWriter, req *http.Request) {
 		log.Fatal(e)
 	}
 
-	node := tree.GetNodeAtPos(json_req.X, json_req.Y) //and nil check
+	node := tree.GetNodeAtPos(json_req.X, json_req.Y)
 
 	json_node := ReadNodeJSONRequest{
 		X: node.X,
@@ -54,10 +51,6 @@ func GetNode(w http.ResponseWriter, req *http.Request) {
 		log.Fatal(e)
 	}
 	fmt.Fprintln(w, string(j))
-}
-
-func WriteNode(w http.ResponseWriter, req *http.Request) {
-	fmt.Fprint(w, "test")
 }
 
 func GetRootNode(w http.ResponseWriter, req *http.Request) {
@@ -87,7 +80,7 @@ func GetSubNodes(w http.ResponseWriter, req *http.Request) {
 		log.Fatal(e)
 	}
 
-	node := tree.GetNodeAtPos(json_req.X, json_req.Y) //and nil check
+	node := tree.GetNodeAtPos(json_req.X, json_req.Y)
 	left := node.Left
 	right := node.Right
 
@@ -118,10 +111,6 @@ func (server *MerkleServer) Start() {
 	http.HandleFunc("/getsub", GetSubNodes)
 	http.HandleFunc("/getnode", GetNode)
 
-
-	//err := http.ListenAndServe(fmt.Sprintf(":%d", server.Port), nil)
-
-	// TODO: implement TLS
 	err := http.ListenAndServeTLS(
 		fmt.Sprintf(":%d", server.Port),
 		server.CertLocation,
